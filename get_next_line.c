@@ -26,11 +26,14 @@ char	*ft_get_read(int fd, char *statik)
 		rd = read(fd, liner, BUFFER_SIZE);
 		if (rd < 0)
 		{
-			if (rd == 0)
-				break ;
 			free(liner);
 			free(statik);
 			return (NULL);
+		}
+		else if (rd == 0)
+		{
+			free(liner);
+			break;
 		}
 		liner[rd] = '\0';
 		if (rd > 0)
