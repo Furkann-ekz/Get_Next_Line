@@ -6,7 +6,7 @@
 /*   By: fekiz <fekiz@student.42istanbul.com.tr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:10:48 by fekiz             #+#    #+#             */
-/*   Updated: 2025/08/27 18:57:24 by fekiz            ###   ########.fr       */
+/*   Updated: 2025/08/27 19:38:38 by fekiz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,17 @@ int	search_nl(char *st)
 	int	i;
 
 	if (!st || st[0] == '\0')
-		return (-1);
+		return (0);
 	i = 0;
 	while (st[i])
 	{
-		if (st[i] == '\n')
+		if (i == 0 && st[i] == '\n')
+			return (1);
+		if (i > 0 && st[i] == '\n')
 			return (i);
 		i++;
 	}
-	return (0);
+	return (-1);
 }
 
 size_t	ft_strlen(const char *s)
@@ -89,27 +91,31 @@ char	*ft_strjoin(char *s1, char *s2)
 	return (str);
 }
 
-char	*ft_get_st(int fd, char *st)
+char	*ft_get_st(int fd, char *st, int index)
 {
 	int		len;
-	char	temp[BUFFER_SIZE + 1];
+	char	*temp;
 
 	len = -1;
+	temp = malloc(index + 1);
+	if (!temp)
+		return (NULL);
 	while (true)
 	{
-		len = read(fd, temp, BUFFER_SIZE);
+		len = read(fd, temp, index);
 		if (len <= 0)
 		{
 			if (len == 0)
 				return (st);
-			return (NULL);
+			return (free(temp), NULL);
 		}
 		temp[len] = '\0';
 		st = ft_strjoin(st, temp);
 		if (search_nl(st) > 0)
 			break ;
 		if (!st)
-			return (NULL);
+			return (free(temp), NULL);
 	}
+	free(temp);
 	return (st);
 }

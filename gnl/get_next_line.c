@@ -6,7 +6,7 @@
 /*   By: fekiz <fekiz@student.42istanbul.com.tr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:10:54 by fekiz             #+#    #+#             */
-/*   Updated: 2025/08/27 19:00:17 by fekiz            ###   ########.fr       */
+/*   Updated: 2025/08/27 19:38:39 by fekiz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,10 @@ char	*get_new_line(char *st)
 		line[i] = st[i];
 		i++;
 	}
-	line[i] = '\n';
-	line[i + 1] = '\0';
+	if (search_nl(st) != -1)
+		line[i++] = '\n';
+	
+	line[i] = '\0';
 	return (line);
 }
 
@@ -45,18 +47,18 @@ char	*set_new_st(char *st)
 	int		j;
 	char	*temp;
 
-	temp = malloc(ft_strlen(st));
+	temp = malloc(ft_strlen(st) + 1);
 	if (!temp)
 		return (NULL);
 	i = 0;
-	while (st[i] != '\n')
+	while (st[i] && st[i] != '\n')
 		i++;
 	j = 0;
 	while (st[++i])
 		temp[j++] = st[i];
 	free(st);
 	temp[j] = '\0';
-	st = malloc(ft_strlen(temp));
+	st = malloc(ft_strlen(temp) + 1);
 	if (!st)
 		return (free(temp), NULL);
 	i = -1;
@@ -70,28 +72,29 @@ char	*get_next_line(int fd)
 {
 	static char	*st;
 	char		*new_line;
+	long long	temp;
 
 	new_line = NULL;
-	if (fd < 0 || BUFFER_SIZE <= 0 || (read(fd, NULL, 0) < 0))
+	temp = BUFFER_SIZE;
+	if (fd < 0 || temp <= 0 || temp >= 2147483647 || (read(fd, NULL, 0) < 0))
 	{
 		if (st)
 			free(st);
 		return (NULL);
 	}
-	st = ft_get_st(fd, st);
+	st = ft_get_st(fd, st, temp);
 	if (!st || st[0] == '\0')
 		return (NULL);
 	new_line = get_new_line(st);
-	printf("before st:%s\n", st);
 	st = set_new_st(st);
-	printf("after st:%s\n", st);
 	return (new_line);
 }
 
 int main()
 {
 	int fd = open("test", O_RDONLY, 777);
-	char *s = get_next_line(fd);
-	// (void)s;
-	printf("main:%s", s);
+	// char *test = get_next_line(fd);
+	// (void)test;
+	for (int i = 0; i <= 5; i++)
+		printf("%s", get_next_line(fd));
 }
