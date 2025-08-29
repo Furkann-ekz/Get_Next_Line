@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fekiz <fekiz@student.42istanbul.com.tr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:10:54 by fekiz             #+#    #+#             */
-/*   Updated: 2025/08/29 12:59:57 by fekiz            ###   ########.fr       */
+/*   Updated: 2025/08/29 12:46:57 by fekiz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 static char	*continue_get_st(int len, char *temp, char *st)
 {
@@ -91,10 +91,13 @@ char	*set_new_st(char *st)
 
 	i = 0;
 	j = 0;
+	if (!st)
+		return (NULL);
 	while (st[i] && st[i] != '\n')
 		i++;
-	if (st[i] == '\n')
-		i++;
+	if (!st[i])
+		return (free(st), NULL);
+	i++;
 	new_st = ft_calloc(ft_strlen(st + i) + 1, 1);
 	if (!new_st)
 		return (free(st), NULL);
@@ -107,7 +110,7 @@ char	*set_new_st(char *st)
 
 char	*get_next_line(int fd)
 {
-	static char	*st;
+	static char	*st[10240];
 	char		*new_line;
 	long long	temp;
 
@@ -115,21 +118,14 @@ char	*get_next_line(int fd)
 	temp = BUFFER_SIZE;
 	if (fd < 0 || temp <= 0 || (read(fd, NULL, 0) < 0))
 	{
-		if (st)
-			free(st);
+		if (st[fd])
+			free(st[fd]);
 		return (NULL);
 	}
-	st = ft_get_st(fd, st, temp);
-	if (!st || st[0] == '\0')
+	st[fd] = ft_get_st(fd, st[fd], temp);
+	if (!st[fd] || st[fd][0] == '\0')
 		return (NULL);
-	new_line = get_new_line(st);
-	st = set_new_st(st);
+	new_line = get_new_line(st[fd]);
+	st[fd] = set_new_st(st[fd]);
 	return (new_line);
-}
-#include "stdio.h"
-
-int main()
-{
-	int fd = open("gnltester/files/big_line_no_nl", O_RDONLY, 777);
-	printf("%s", get_next_line(fd));
 }
