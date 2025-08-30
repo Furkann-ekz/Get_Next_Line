@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: fekiz <fekiz@student.42istanbul.com.tr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/27 14:10:48 by fekiz             #+#    #+#             */
-/*   Updated: 2025/08/28 13:39:35 by fekiz            ###   ########.fr       */
+/*   Created: 2025/08/30 15:32:08 by fekiz             #+#    #+#             */
+/*   Updated: 2025/08/30 15:41:01 by fekiz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,13 @@ int	search_nl(char *st)
 {
 	int	i;
 
-	if (!st || st[0] == '\0')
-		return (0);
 	i = 0;
+	if (!st)
+		return (-1);
 	while (st[i])
 	{
-		if (i == 0 && st[i] == '\n')
-			return (1);
-		if (i > 0 && st[i] == '\n')
-			return (i);
+		if (st[i] == '\n')
+			return (i + 1);
 		i++;
 	}
 	return (-1);
@@ -74,7 +72,7 @@ char	*ft_strjoin(char *s1, char *s2)
 	j = 0;
 	if (!s1)
 	{
-		s1 = ft_calloc(1, 1);
+		s1 = malloc(1);
 		if (!s1)
 			return (NULL);
 		s1[0] = '\0';
@@ -85,28 +83,9 @@ char	*ft_strjoin(char *s1, char *s2)
 		i++;
 	while (s2[j])
 		j++;
-	str = ft_calloc(i + j + 1, 1);
+	str = malloc(i + j + 1);
 	if (!str)
 		return (free(s1), NULL);
 	ft_next_join(s1, s2, str);
 	return (str);
-}
-
-void	*ft_calloc(size_t count, size_t size)
-{
-	void			*ptr;
-	unsigned char	*p;
-	size_t			i;
-
-	ptr = malloc(count * size);
-	if (!ptr)
-		return (NULL);
-	p = (unsigned char *)ptr;
-	i = 0;
-	while (i < count * size)
-	{
-		p[i] = 0;
-		i ++;
-	}
-	return (ptr);
 }

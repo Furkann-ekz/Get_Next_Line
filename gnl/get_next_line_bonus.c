@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: fekiz <fekiz@student.42istanbul.com.tr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/27 14:10:54 by fekiz             #+#    #+#             */
-/*   Updated: 2025/08/29 12:46:57 by fekiz            ###   ########.fr       */
+/*   Created: 2025/08/30 15:33:01 by fekiz             #+#    #+#             */
+/*   Updated: 2025/08/30 17:56:42 by fekiz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,37 +14,39 @@
 
 static char	*continue_get_st(int len, char *temp, char *st)
 {
-	if (len == 0)
+	free(temp);
+	if (len == 0 || len == -1)
 	{
-		free(temp);
 		if (st && st[0] == '\0')
 		{
 			free(st);
-			st = NULL;
+			return (NULL);
 		}
 		return (st);
 	}
+	free(st);
 	return (NULL);
 }
 
-char	*ft_get_st(int fd, char *st, int index)
+char	*ft_get_st(int fd, char *st)
 {
 	int		len;
 	char	*temp;
 
-	len = -1;
-	temp = ft_calloc(index + 1, 1);
-	if (!temp)
-		return (NULL);
+	if (!st)
+	{
+		st = malloc(1);
+		if (st)
+			st[0] = '\0';
+	}
+	temp = malloc(BUFFER_SIZE + 1);
+	if (!temp || !st)
+		return (free(st), NULL);
 	while (true)
 	{
-		len = read(fd, temp, index);
+		len = read(fd, temp, BUFFER_SIZE);
 		if (len <= 0)
-		{
-			if (len == 0)
-				return (continue_get_st(len, temp, st));
-			return (free(temp), free(st), NULL);
-		}
+			return (continue_get_st(len, temp, st));
 		temp[len] = '\0';
 		st = ft_strjoin(st, temp);
 		if (!st)
@@ -60,24 +62,22 @@ char	*get_new_line(char *st)
 	int		i;
 	char	*line;
 
+	if (!st || st[0] == '\0')
+		return (NULL);
 	i = search_nl(st);
 	if (i > 0)
-		line = ft_calloc(i + 2, 1);
-	else if (i == -1)
-		line = ft_calloc(ft_strlen(st) + 1, 1);
-	else if (i == 0)
-		return (NULL);
+		line = malloc(i + 1);
+	else
+		line = malloc(ft_strlen(st) + 1);
 	if (!line)
 		return (NULL);
 	i = 0;
-	while (st[i])
+	while (st[i] && st[i] != '\n')
 	{
-		if (st[i] == '\n')
-			break ;
 		line[i] = st[i];
 		i++;
 	}
-	if (search_nl(st) != -1)
+	if (st[i] == '\n')
 		line[i++] = '\n';
 	line[i] = '\0';
 	return (line);
@@ -89,18 +89,22 @@ char	*set_new_st(char *st)
 	int		j;
 	char	*new_st;
 
-	i = 0;
-	j = 0;
 	if (!st)
 		return (NULL);
+	i = 0;
 	while (st[i] && st[i] != '\n')
 		i++;
-	if (!st[i])
-		return (free(st), NULL);
-	i++;
-	new_st = ft_calloc(ft_strlen(st + i) + 1, 1);
+	if (st[i] == '\n')
+		i++;
+	if (st[i] == '\0')
+	{
+		free(st);
+		return (NULL);
+	}
+	new_st = malloc(ft_strlen(st + i) + 1);
 	if (!new_st)
 		return (free(st), NULL);
+	j = 0;
 	while (st[i])
 		new_st[j++] = st[i++];
 	new_st[j] = '\0';
@@ -112,18 +116,15 @@ char	*get_next_line(int fd)
 {
 	static char	*st[10240];
 	char		*new_line;
-	long long	temp;
 
-	new_line = NULL;
-	temp = BUFFER_SIZE;
-	if (fd < 0 || temp <= 0 || (read(fd, NULL, 0) < 0))
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, NULL, 0) < 0)
 	{
-		if (st[fd])
-			free(st[fd]);
+		free(st[fd]);
+		st[fd] = NULL;
 		return (NULL);
 	}
-	st[fd] = ft_get_st(fd, st[fd], temp);
-	if (!st[fd] || st[fd][0] == '\0')
+	st[fd] = ft_get_st(fd, st[fd]);
+	if (!st[fd])
 		return (NULL);
 	new_line = get_new_line(st[fd]);
 	st[fd] = set_new_st(st[fd]);
